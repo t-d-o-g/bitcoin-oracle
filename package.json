@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass": "node-sass assets/scss/ -o assets/css/",
+    "sass:watch": "npm run sass && node-sass assets/scss/ -wo assets/css/"
   },
   "repository": {
     "type": "git",
