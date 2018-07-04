@@ -1,14 +1,45 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
-<script src="./assets/js/chart.js"></script>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bitcoin Genie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style.css" /> 
+    <!-- <script src="main.js"></script> -->
 </head>
 <body>
-<div id="curentprice"><h1>Current Price : </h1><h1 id ="pricedata"></h1> 
-</div>
-<div id="chartContainer" style="height: 300px; width: 50%;"></div>
-<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
-<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+    <div class="container">
+
+        <div class="jumbotron">
+                <h1 class = "text-center">Bitcoin Genie</h1> 
+                <p class = "text-center">feel the sentiment for bitcoin here...</p> 
+        </div>
+
+        <div class="row">
+                <div class="col-sm-6 bitcoin-price">Bitcoin Price here: $6,000</div>
+                <div class="col-sm-6 sentiment-index">Sentiment Index here: +.97</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6 sentiment-trend">
+                <img src="sentiment.png" class="graph" alt="bitcoin sentiment">     
+            </div>
+
+            <div class="col-sm-6 historical-data">
+                <img src="historical_data.png" class="graph" alt="bitcoin sentiment">
+                <div id="curentprice"><h1>Current Price : </h1><h1 id ="pricedata"></h1> 
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <a href="https://www.google.com">Try Google</a>
+        </div>
+    </div>
+    <script src="./assets/js/chart.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 </body>
 </html>
-
