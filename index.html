@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" media="screen" href="style.css" /> 
-    <!-- <script src="main.js"></script> -->
+    <!-- <script src="app.js"></script> -->
 </head>
 <body>
     <div class="container">
@@ -18,7 +18,7 @@
         </div>
 
         <div class="row">
-                <div class="col-sm-6 bitcoin-price">Bitcoin Price here: $6,000</div>
+                <div class="col-sm-6 bitcoin-price" id="pricedata">Bitcoin Price here: $6,000</div>
                 <div class="col-sm-6 sentiment-index">Sentiment Index here: +.97</div>
         </div>
 
@@ -31,6 +31,7 @@
                 <img src="historical_data.png" class="graph" alt="bitcoin sentiment">
                 <div id="curentprice"><h1>Current Price : </h1><h1 id ="pricedata"></h1> 
                 </div>
+                <div id="chartContainer" style="height: 300px; width: 50%;"></div>
             </div>
         </div>
 
