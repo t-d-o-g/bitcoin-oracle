@@ -1,45 +1,54 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Bitcoin Genie</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" media="screen" href="style.css" /> 
-    <!-- <script src="main.js"></script> -->
-</head>
-<body>
-    <div class="container">
 
-        <div class="jumbotron">
-                <h1 class = "text-center">Bitcoin Genie</h1> 
-                <p class = "text-center">feel the sentiment for bitcoin here...</p> 
-        </div>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-        <div class="row">
-                <div class="col-sm-6 bitcoin-price">Bitcoin Price here: $6,000</div>
-                <div class="col-sm-6 sentiment-index">Sentiment Index here: +.97</div>
-        </div>
+        <title>BitCoin Genie</title>
 
-        <div class="row">
-            <div class="col-sm-6 sentiment-trend">
-                <img src="sentiment.png" class="graph" alt="bitcoin sentiment">     
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" media="screen" href="assets/css/main.css" /> 
+    </head>
+
+    <body>
+        <header>
+            <div class="jumbotron text-center">
+                <span class="align-helper"></span><img id="lamp" src="assets/images/genie-lamp.png">
+                <h1>BitCoin Genie</h1> 
+                <p>feel the sentiment for bitcoin here...</p> 
             </div>
+        </header>
 
-            <div class="col-sm-6 historical-data">
-                <img src="historical_data.png" class="graph" alt="bitcoin sentiment">
-                <div id="curentprice"><h1>Current Price : </h1><h1 id ="pricedata"></h1> 
+        <main>
+            <div class="container">
+                <div class="row">
+                    <div id="currentbtc" class="col-4 text-center m-auto">
+                        <h3>Current BTC</h3>
+                        <p id="pricedata"></p>
+                    </div>
+                    <div id="currentsentiment" class="col-4 text-center m-auto">
+                        <h3>Sentiment</h3>
+                        <p id="sentimentdata"></p>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div>
+                        <canvas id="line-chart" width="800" height="400"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <div class="row">
-            <a href="https://www.google.com">Try Google</a>
-        </div>
-    </div>
-    <script src="./assets/js/chart.js"></script>
-    <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
-    <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
-</body>
+        <footer>
+            <div class="footer fixed-bottom text-center">
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script> 
+        <script src="assets/js/chart.js"></script>
+        <script src="assets/js/app.js"></script>
+    </body>
+
 </html>
