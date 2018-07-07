@@ -1,14 +1,55 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-<script src="./assets/js/chart.js"></script>
-</head>
-<body>
-<div id="curentprice"><h1>Current Price : </h1><h1 id ="pricedata"></h1> 
-</div>
-<div id="chartContainer" style="height: 300px; width: 50%;"></div>
-<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
-<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
-</body>
-</html>
+<!DOCTYPE html>
 
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <title>BitCoin Genie</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" media="screen" href="assets/css/main.css" /> 
+    </head>
+
+    <body>
+        <header>
+            <div class="jumbotron text-center">
+                <span class="align-helper"></span><img id="lamp" src="assets/images/genie-lamp.png">
+                <h1>BitCoin Genie</h1> 
+                <p>feel the sentiment for bitcoin here...</p> 
+            </div>
+        </header>
+
+        <main>
+            <div class="container">
+                <div class="row">
+                    <div id="currentbtc" class="col-4 text-center m-auto">
+                        <h3>Current BTC</h3>
+                        <p id="pricedata"></p>
+                    </div>
+                    <div id="currentsentiment" class="col-4 text-center m-auto">
+                        <h3>Sentiment</h3>
+                        <p id="sentimentdata"></p>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div>
+                        <canvas id="line-chart" width="800" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer fixed-bottom text-center">
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script> 
+        <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
+        <script src="assets/js/chart.js"></script>
+        <script src="assets/js/app.js"></script>
+    </body>
+
+</html>
