@@ -18,19 +18,48 @@ var twitter = require('twitter');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+function randomGenerator(min, max)
+{
+    return ( min + Math.floor( Math.random() * (max - min) ) );
+}
+
 // Take the text parameter passed to this HTTP endpoint and insert it into the
 // Realtime Database under the path /messages/:pushId/original
-// URL: https://us-central1-bitcoinprice-208905.cloudfunctions.net/addMessage?text=<any-text>
-// https://us-central1-bitcoin-oracle-5f725.cloudfunctions.net/helloworld
+// https://us-central1-bitcoin-oracle-5f725.cloudfunctions.net/addMessage?text=samplestring
 exports.addMessage = functions.https.onRequest((req, res) => {
     // Grab the text parameter.
     const original = req.query.text;
+
+    // Todo: Find out why function keeps on getting called if we don't
+    // add to /messages
     // Push the new message into the Realtime Database using the Firebase Admin SDK.
     return admin.database().ref('/messages').push({original: original}).then((snapshot) => {
       // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
+      addTweets(original);
       return res.redirect(303, snapshot.ref.toString());
     });
   });
+
+function addTweets(tweetDate) {
+    var tweetObj = {
+        tweets: [
+        ],
+        bitcoinPrice: 4500,
+        sentimentPrice: 5000
+    }   
+
+    tweetObj.bitcoinPrice = randomGenerator(3000, 20000);
+    tweetObj.sentimentPrice = randomGenerator(3000, 20000);
+    var tweetNum = randomGenerator(3, 10);
+    for (let i = 0; i < tweetNum; ++i) {
+        let tObj = {tweet: "Tweet" + i, url: "URL"+ i};
+        tweetObj.tweets.push(tObj);    
+    }
+
+    let refPath = "/dates/"+tweetDate;
+    //   let dateRef = admin.database().ref('/dates').update(dateobj);
+    return admin.database().ref(refPath).set(tweetObj);
+}
 
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
