@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "dev": "bitcoinprice-208905",
+    "default": "bitcoin-oracle-5f725"
+  }
+}
