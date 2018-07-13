@@ -1,12 +1,17 @@
 {
   "name": "bitcoin-oracle",
   "version": "1.0.0",
-  "description": "",
+  "description": "BitCoin Oracle",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "sass": "node-sass assets/scss/ -o assets/css/",
-    "sass:watch": "npm run sass && node-sass assets/scss/ -wo assets/css/"
+    "sass:watch": "npm run sass && node-sass assets/scss/ -wo assets/css/",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
   },
   "repository": {
     "type": "git",
@@ -20,6 +25,16 @@
   },
   "homepage": "https://github.com/t-d-o-g/bitcoin-oracle#readme",
   "devDependencies": {
-    "node-sass": "^4.9.0"
-  }
+    "node-sass": "^4.9.0",
+    "eslint": "^4.12.0",
+    "eslint-plugin-promise": "^3.6.0"
+  },
+  "dependencies": {
+    "firebase-admin": "~5.12.1",
+    "firebase-functions": "^1.0.3",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "twitter": "^1.7.1"
+  },
+  "private": true
 }
