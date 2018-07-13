@@ -149,17 +149,7 @@ T.get('search/tweets', params, function(err, data, response) {
 // URL: 
 // https://us-central1-bitcoinprice-208905.cloudfunctions.net/helloWorld
 exports.helloWorld = functions.https.onRequest((req, res) => {
-    var movie = "Pulp Fiction"
-  
-    // rp.get(queryURL, function (error, response, body) {
-    //     console.log('error:', error); // Print the error if one occurred 
-    //     console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received 
-    //     console.log('body:', body); //Prints the response of the request. 
-    //   });
-    //   res.status(200).send("Success");
-
-
-    // var movie = $(this).attr("data-movie");
+    var movie = "Pulp Fiction"  
     let appKey = "3AzDFpfTyJGXuBgEAeMFLz2LDCKAEJHl";
     var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
         movie + "&api_key=" + appKey + "&limit=10";
