@@ -1,6 +1,7 @@
 
     // Initialize Firebase
     var inputData = [];
+
     var sentimentResults = [];
     var config = {
         apiKey: "AIzaSyBMw3UmRefi3Jq0n8PrbQVUaLAu_oaFGy8",
@@ -51,6 +52,8 @@
                 link.text(tweets[j].tweet);
                 console.log(tweets[j].tweet);
                 link.addClass("row");
+                
+                inputData.push(tweets[j].tweet);
 
                 newDateDiv.append(link); 
                 
@@ -60,6 +63,10 @@
         tweetElement.append(newDateDiv);
 
         }
+
+        console.log(inputData);
+        console.log(inputData);
+        invokeSentimentAPI(inputData);
 
     });
 
@@ -71,21 +78,12 @@
 
 
 
-      var dataRef = firebase.database();
 
-      dataRef.ref().on("value", function(snapshot) {
-        var i = 0;
-        snapshot.forEach(function(child) {
-  
-          
-            inputData.push(child.val());
-          
+var queryURL = "https://language.googleapis.com/v1/documents:analyzeSentiment?key=AIzaSyAEBfvNxgOAWzD17tfRIHGJVv4dg5RjIUM";
 
 
-            var queryURL = "https://language.googleapis.com/v1/documents:analyzeSentiment?key=AIzaSyAEBfvNxgOAWzD17tfRIHGJVv4dg5RjIUM";
-
-
-
+function invokeSentimentAPI(inputData) {
+        for(i=0;i<inputData.length;i++) {
 
             var inputObject = {
                 "document":{
@@ -111,14 +109,12 @@
                 error: function( jqXhr, textStatus, errorThrown ){
                     console.log( errorThrown );
                 }
-            });
-        i++;
+          
      });
 
+   
+    }
 
-    }, function(errorObject) {
-        console.log("Errors handled: " + errorObject.code);
-      });
-
+}
 
   
