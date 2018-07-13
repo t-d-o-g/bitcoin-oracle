@@ -4,9 +4,34 @@
 const functions = require('firebase-functions');
 require('request');
 const rp = require('request-promise');
-var twitter = require('twitter');
-//const rp = require('jquery');
+var Twitter = require('twitter');
 
+var config = {
+    consumer_key: '65CEg6roRTFMjkV9r0uo7Sssw',
+    consumer_secret: 'FSuWyUQrl3mDTI4oF0XQRoxg6PlsBzBZrriIyR8SybXPRAgiUA',
+    access_token_key: '1016727382185660416-0ImOTX0aZ1MKDCMLhFLT4E0eyM7TDE',
+    access_token_secret: 'Lmnz4hj4A4GrWrRP59CpR6misquFfyWbn2IImvSCptPe0'
+  }
+
+  let bitcoinTweets = [
+      "this is price of bitcoin",
+      "bitcoin will increase",
+      "price will decrease of bitcoin",
+      "bitcoin is the future",
+      "bitcoin is the past",
+      "bitcoin is number 1",
+      "finance world will use bitcoin",
+      "Next year bitcoin will be up",
+      "bitcoin can't keep on going up",
+      "bitcoin is good",
+      "nothing good about bitcoin",
+      "bitcoin needs regulation",
+      "bitcoin shouldn't be regulated",
+      "bitcoin in ecommerce",
+      "bitcoin is anonymous",
+      "bitcoin is for drug dealers",
+      "bitcoin is for everyone"
+  ]
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
@@ -40,27 +65,6 @@ exports.addMessage = functions.https.onRequest((req, res) => {
     });
   });
 
-function addTweets(tweetDate) {
-    var tweetObj = {
-        tweets: [
-        ],
-        bitcoinPrice: 4500,
-        sentimentPrice: 5000
-    }   
-
-    tweetObj.bitcoinPrice = randomGenerator(3000, 20000);
-    tweetObj.sentimentPrice = randomGenerator(3000, 20000);
-    var tweetNum = randomGenerator(3, 10);
-    for (let i = 0; i < tweetNum; ++i) {
-        let tObj = {tweet: "Tweet" + i, url: "URL"+ i};
-        tweetObj.tweets.push(tObj);    
-    }
-
-    let refPath = "/dates/"+tweetDate;
-    //   let dateRef = admin.database().ref('/dates').update(dateobj);
-    return admin.database().ref(refPath).set(tweetObj);
-}
-
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
 exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
@@ -75,20 +79,77 @@ exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
   return snapshot.ref.parent.child('uppercase').set(uppercase);
 });
 
+function addTweets(tweetDate) {
+    var tweetObj = {
+        tweets: [
+        ],
+        // bitcoinPrice: 4500,
+        // sentimentPrice: 5000
+    }   
+
+    // tweetObj.bitcoinPrice = randomGenerator(3000, 20000);
+    // tweetObj.sentimentPrice = randomGenerator(3000, 20000);
+    var tweetNum = randomGenerator(3, 10);
+    for (let i = 0; i < tweetNum; ++i) {
+        let j = randomGenerator(0, bitcoinTweets.length)
+        let tObj = {tweet: bitcoinTweets[j], url: "URL"+ i};
+        tweetObj.tweets.push(tObj);    
+    }
+
+    let refPath = "/dates/"+tweetDate;
+    //   let dateRef = admin.database().ref('/dates').update(dateobj);
+    return admin.database().ref(refPath).set(tweetObj);
+}
+
+exports.getTweets = functions.https.onRequest((req, res) => {
+    var T = new Twitter(config);
+    // Set up your search parameters
+    var params = {
+        q: '#bitcoin',
+        count: 3,
+        // result_type: 'recent',
+        lang: 'en',
+        until: '2018-07-09'
+    }
+
+    // Initiate your search using the above paramaters
+T.get('search/tweets', params, function(err, data, response) {
+    // If there is no error, proceed
+    if(!err){
+      // Loop through the returned tweets
+      for(let i = 0; i < data.statuses.length; i++){
+        // Get the tweet Id from the returned data
+        let id = { id: data.statuses[i].id_str }
+        // Try to Favorite the selected Tweet
+        T.post('favorites/create', id, function(err, response){
+          // If the favorite fails, log the error message
+          if(err){
+            console.log(err[0].message);
+          }
+          // If the favorite is successful, log the url of the tweet
+          else{
+            let username = response.user.screen_name;
+            let tweetId = response.id_str;
+
+            console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`);
+            console.log('created_at:', response.created_at);
+            console.log('tweet: ', response.text);
+              if (response.entities.urls.length > 0) {
+                  console.log('URL: ', response.entities.urls[0].expanded_url)
+              }
+          }
+        });
+      }
+    } else {
+      console.log(err);
+    }
+})
+})
+
 // URL: 
 // https://us-central1-bitcoinprice-208905.cloudfunctions.net/helloWorld
 exports.helloWorld = functions.https.onRequest((req, res) => {
-    var movie = "Pulp Fiction"
-  
-    // rp.get(queryURL, function (error, response, body) {
-    //     console.log('error:', error); // Print the error if one occurred 
-    //     console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received 
-    //     console.log('body:', body); //Prints the response of the request. 
-    //   });
-    //   res.status(200).send("Success");
-
-
-    // var movie = $(this).attr("data-movie");
+    var movie = "Pulp Fiction"  
     let appKey = "3AzDFpfTyJGXuBgEAeMFLz2LDCKAEJHl";
     var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
         movie + "&api_key=" + appKey + "&limit=10";
