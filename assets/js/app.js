@@ -64,6 +64,7 @@ function readTwitterData() {
         console.log(inputData);
         console.log(inputData);
         invokeSentimentAPI(inputData);
+    }
     });
 }
 
