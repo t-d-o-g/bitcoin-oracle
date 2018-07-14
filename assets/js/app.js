@@ -30,7 +30,10 @@
 
         for (i=0;i<7;i++) {
 
-        var date = moment().subtract(i, 'days').format("YYYYMMDD");
+        //var date = moment().subtract(i, 'days').format("YYYYMMDD");
+        // hardcoded for now :)
+        var date = "20180713";
+        console.log(date);
 
         var bitcoinPrice = snapshot.child(date +"/bitcoinPrice").val();
         var sentimentPrice= snapshot.child(date+ "/sentimentPrice").val();
