@@ -2,8 +2,8 @@ window.onload = function() {
     var dates = [];
     var bitcoinPrice = [];
     var sentiment = [0, -.17, .06, -.28, .35, .18, -.04, .26];
-    var startDate = '2018-06-25';
-    var endDate = '2018-07-02';
+    var startDate = '2018-07-06';
+    var endDate = '2018-07-13';
 
     $.getJSON("https://api.coindesk.com/v1/bpi/currentprice.json", getPrice);    
     $.getJSON("https://api.coindesk.com/v1/bpi/historical/close.json?start="+startDate+"&end="+endDate, addData);

@@ -29,7 +29,18 @@ function readTwitterData() {
             var sentimentPrice= snapshot.child(date+ "/sentimentPrice").val();
             var tweets=snapshot.child(date+"/tweets").val();
 
-            var newDateDiv = $("<div>");
+        for (i=0;i<7;i++) {
+
+        //var date = moment().subtract(i, 'days').format("YYYYMMDD");
+        // hardcoded for now :)
+        var date = "20180713";
+        console.log(date);
+
+        var bitcoinPrice = snapshot.child(date +"/bitcoinPrice").val();
+        var sentimentPrice= snapshot.child(date+ "/sentimentPrice").val();
+        var tweets=snapshot.child(date+"/tweets").val();
+
+        var newDateDiv = $("<div>");
             newDateDiv.attr("class","date");
 
             newTitle =$("<h3>");
