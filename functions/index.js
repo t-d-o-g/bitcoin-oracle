@@ -2,15 +2,15 @@
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
-require('request');
-const rp = require('request-promise');
+// require('request');
+// const rp = require('request-promise');
 var Twitter = require('twitter');
 
 var config = {
-    consumer_key: '65CEg6roRTFMjkV9r0uo7Sssw',
-    consumer_secret: 'FSuWyUQrl3mDTI4oF0XQRoxg6PlsBzBZrriIyR8SybXPRAgiUA',
-    access_token_key: '1016727382185660416-0ImOTX0aZ1MKDCMLhFLT4E0eyM7TDE',
-    access_token_secret: 'Lmnz4hj4A4GrWrRP59CpR6misquFfyWbn2IImvSCptPe0'
+    consumer_key: functions.config().twitter.consumer_key,
+    consumer_secret: functions.config().twitter.consumer_secret,
+    access_token_key: functions.config().twitter.access_token_key,
+    access_token_secret: functions.config().twitter.access_token_secret
   }
 
   let bitcoinTweets = [
@@ -83,12 +83,8 @@ function addTweets(tweetDate) {
     var tweetObj = {
         tweets: [
         ],
-        // bitcoinPrice: 4500,
-        // sentimentPrice: 5000
     }   
 
-    // tweetObj.bitcoinPrice = randomGenerator(3000, 20000);
-    // tweetObj.sentimentPrice = randomGenerator(3000, 20000);
     var tweetNum = randomGenerator(3, 10);
     for (let i = 0; i < tweetNum; ++i) {
         let j = randomGenerator(0, bitcoinTweets.length)
@@ -101,88 +97,125 @@ function addTweets(tweetDate) {
     return admin.database().ref(refPath).set(tweetObj);
 }
 
-exports.getTweets = functions.https.onRequest((req, res) => {
+exports.getTweets = functions.https.onRequest((req, res, maxId) => {
+    const until = req.query.text;
+    getTwitterData( {until:until} );
+})
+
+function getTwitterData(inObj) {
+    console.log("inObj", inObj);
+    console.log("config", config);
+
     var T = new Twitter(config);
     // Set up your search parameters
     var params = {
         q: '#bitcoin',
         count: 3,
-        // result_type: 'recent',
         lang: 'en',
-        until: '2018-07-09'
+        // until: '2018-07-09'
     }
+
+    if (inObj) {
+        if (inObj.until) {
+            params.until = inObj.until;
+        }
+        if (inObj.max_id) {
+            params.max_id = inObj.max_id;
+        }
+    }
+
+    console.log("params", params);
+    // if (maxId) {
+    //     params.max_id = maxId;
+    // }
 
     // Initiate your search using the above paramaters
-T.get('search/tweets', params, function(err, data, response) {
-    // If there is no error, proceed
-    if(!err){
-      // Loop through the returned tweets
-      for(let i = 0; i < data.statuses.length; i++){
-        // Get the tweet Id from the returned data
-        let id = { id: data.statuses[i].id_str }
-        // Try to Favorite the selected Tweet
-        T.post('favorites/create', id, function(err, response){
-          // If the favorite fails, log the error message
-          if(err){
-            console.log(err[0].message);
-          }
-          // If the favorite is successful, log the url of the tweet
-          else{
-            let username = response.user.screen_name;
-            let tweetId = response.id_str;
+    T.get('search/tweets', params, ((err, data, response)  => {
+        // If there is no error, proceed
+        if (!err) {
+            //console.log("response: ", response);
+            processTwitResponse(data);
+ 
+        } else {
+            console.log("Error occurred", err);
+        }
+    }))
+}
 
-            console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`);
-            console.log('created_at:', response.created_at);
-            console.log('tweet: ', response.text);
-              if (response.entities.urls.length > 0) {
-                  console.log('URL: ', response.entities.urls[0].expanded_url)
-              }
-          }
-        });
-      }
-    } else {
-      console.log(err);
+function processTwitResponse(data) {
+    // Loop through the returned tweets
+    for (let i = 0; i < data.statuses.length; i++) {
+        // Get the tweet Id from the returned data
+        let item = data.statuses[i];
+        let id = { id: item.id_str }
+
+        console.log('item:', item);
+
+        console.log('created_at:', item.created_at);
+        console.log('tweet: ', item.text);
+        console.log('Id: ', item.id_str);
+        if (item.entities.urls.length > 0) {
+            console.log('URL: ', item.entities.urls[0].expanded_url)
+        }
     }
-})
-})
+    console.log('search_metadata json:', data.search_metadata);
+
+    // VIK_TODO: Revisit this to find better way to check if it has the
+    // property or not
+    if (data.search_metadata.next_results) {
+        let maxId = getMaxId(data.search_metadata.next_results);
+        if (maxId) {
+            console.log('meta-data:', data.search_metadata.next_results);
+            getTwitterData({"max_id": maxId});
+        }
+    }
+}
+
+function getMaxId(nextResult) {
+    let maxIdStr = "max_id=";
+    let maxIdStrEnd = nextResult.indexOf(maxIdStr) + maxIdStr.length;
+    let ampAfterMaxIdStr = nextResult.indexOf("&", maxIdStrEnd);
+    let maxId = nextResult.slice(maxIdStrEnd, ampAfterMaxIdStr);
+    return maxId;
+}
 
 // URL: 
 // https://us-central1-bitcoinprice-208905.cloudfunctions.net/helloWorld
-exports.helloWorld = functions.https.onRequest((req, res) => {
-    var movie = "Pulp Fiction"  
-    let appKey = "3AzDFpfTyJGXuBgEAeMFLz2LDCKAEJHl";
-    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
-        movie + "&api_key=" + appKey + "&limit=10";
+// exports.helloWorld = functions.https.onRequest((req, res) => {
+//     var movie = "Pulp Fiction"  
+//     let appKey = "3AzDFpfTyJGXuBgEAeMFLz2LDCKAEJHl";
+//     var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+//         movie + "&api_key=" + appKey + "&limit=10";
 
-        var options = {
-            uri: queryURL,
-            // qs: {
-            //     access_token: 'xxxxx xxxxx' // -> uri + '?access_token=xxxxx%20xxxxx'
-            // },
-            // headers: {
-            //     'User-Agent': 'Request-Promise'
-            // },
-            json: true // Automatically parses the JSON string in the response
-        };
-    return rp(options)
-            .then(function (repos) {
-                // console.log(JSON.stringify(repos));
-                var results = repos.data;
-                console.log('User has %d repos', results.length);
+//         var options = {
+//             uri: queryURL,
+//             // qs: {
+//             //     access_token: 'xxxxx xxxxx' // -> uri + '?access_token=xxxxx%20xxxxx'
+//             // },
+//             // headers: {
+//             //     'User-Agent': 'Request-Promise'
+//             // },
+//             json: true // Automatically parses the JSON string in the response
+//         };
+//     return rp(options)
+//             .then(function (repos) {
+//                 // console.log(JSON.stringify(repos));
+//                 var results = repos.data;
+//                 console.log('User has %d repos', results.length);
 
-                for (var i = 0; i < results.length; i++) {
-                    let gifData = results[i];
-                    // var gifDiv = $("<div>").addClass("ajax-item");
+//                 for (var i = 0; i < results.length; i++) {
+//                     let gifData = results[i];
+//                     // var gifDiv = $("<div>").addClass("ajax-item");
         
-                    console.log(gifData.title);
-                    console.log(gifData.images.fixed_height_still.url);
-                    console.log(gifData.images.fixed_height.url);
-                }
-                return this;
-            });
-            // .catch(function (err) {
-            //     console.log("Api call failed");
-            //     // API call failed...
+//                     console.log(gifData.title);
+//                     console.log(gifData.images.fixed_height_still.url);
+//                     console.log(gifData.images.fixed_height.url);
+//                 }
+//                 return this;
+//             });
+//             // .catch(function (err) {
+//             //     console.log("Api call failed");
+//             //     // API call failed...
                 
-            // });
-})
+//             // });
+// })
