@@ -13,6 +13,9 @@ var config = {
     access_token_secret: functions.config().twitter.access_token_secret
   }
 
+  // Maximum number of responses we want
+  let maxCount = 100;
+
   let bitcoinTweets = [
       "this is price of bitcoin",
       "bitcoin will increase",
@@ -35,7 +38,6 @@ var config = {
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
-// exports.helloWorld = functions.https.onRequest((request, response) => {
 //  response.send("Hello from Firebase!");
 // });
 
@@ -99,20 +101,23 @@ function addTweets(tweetDate) {
 
 exports.getTweets = functions.https.onRequest((req, res, maxId) => {
     const until = req.query.text;
+    const count = req.query.count;
+    if (count) {
+        maxCount = count;
+    }
     getTwitterData( {until:until} );
 })
 
 function getTwitterData(inObj) {
     console.log("inObj", inObj);
-    console.log("config", config);
+    // console.log("config", config);
 
     var T = new Twitter(config);
     // Set up your search parameters
     var params = {
         q: '#bitcoin',
-        count: 3,
+        count: maxCount,
         lang: 'en',
-        // until: '2018-07-09'
     }
 
     if (inObj) {
@@ -125,17 +130,12 @@ function getTwitterData(inObj) {
     }
 
     console.log("params", params);
-    // if (maxId) {
-    //     params.max_id = maxId;
-    // }
 
     // Initiate your search using the above paramaters
     T.get('search/tweets', params, ((err, data, response)  => {
         // If there is no error, proceed
         if (!err) {
-            //console.log("response: ", response);
             processTwitResponse(data);
- 
         } else {
             console.log("Error occurred", err);
         }
@@ -144,31 +144,63 @@ function getTwitterData(inObj) {
 
 function processTwitResponse(data) {
     // Loop through the returned tweets
+    let maxId = 0;
     for (let i = 0; i < data.statuses.length; i++) {
         // Get the tweet Id from the returned data
-        let item = data.statuses[i];
-        let id = { id: item.id_str }
+        const item = data.statuses[i];
+        const id = item.id_str;
+        if (parseInt(maxId) < parseInt(id)) {
+            maxId = id;
+        }
 
         console.log('item:', item);
 
-        console.log('created_at:', item.created_at);
-        console.log('tweet: ', item.text);
-        console.log('Id: ', item.id_str);
+        // console.log('created_at:', item.created_at);
+        // console.log('tweet: ', item.text);
+        console.log('Id: ', id);
+
         if (item.entities.urls.length > 0) {
             console.log('URL: ', item.entities.urls[0].expanded_url)
         }
+
+        const date = getDate(item.created_at);
+        // Add to database
+        let refPath = "/dates/"+date+"/"+id;
+        console.log("refpath:", refPath);
+        console.log("tweet:", item.text);
+
+        admin.database().ref(refPath).set(item.text);
     }
     console.log('search_metadata json:', data.search_metadata);
 
     // VIK_TODO: Revisit this to find better way to check if it has the
     // property or not
-    if (data.search_metadata.next_results) {
-        let maxId = getMaxId(data.search_metadata.next_results);
-        if (maxId) {
-            console.log('meta-data:', data.search_metadata.next_results);
-            getTwitterData({"max_id": maxId});
-        }
+    // For some reason, next_results is sometimes not included in
+    // search_metdata so commenting and using maxId that we deduced
+    // if (data.search_metadata.next_results) {
+    //     let maxId = getMaxId(data.search_metadata.next_results);
+    //     if (maxId) {
+    //         console.log('next_results:', data.search_metadata.next_results);
+    //         getTwitterData({"max_id": maxId});
+    //     }
+    // }
+
+    getTwitterData({"max_id": maxId});
+}
+
+function getDate(createdDate) {
+    let dt = new Date(createdDate);
+    let year = dt.getFullYear().toString();
+    let month = dt.getMonth().toString();
+    if (month.length === 1) {
+        month = "0" + month;
     }
+    let day = dt.getDate().toString();
+    if (day.length === 1) {
+        day = "0" + day;
+    }
+
+    return (year + month + day);
 }
 
 function getMaxId(nextResult) {
