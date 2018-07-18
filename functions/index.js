@@ -191,7 +191,8 @@ function processTwitResponse(data) {
 function getDate(createdDate) {
     let dt = new Date(createdDate);
     let year = dt.getFullYear().toString();
-    let month = dt.getMonth().toString();
+    let month = dt.getMonth() + 1;
+    month = month.toString();
     if (month.length === 1) {
         month = "0" + month;
     }
