@@ -2,42 +2,51 @@
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
-require('request');
-const rp = require('request-promise');
+// require('request');
+// const rp = require('request-promise');
 var Twitter = require('twitter');
 
 var config = {
-    consumer_key: '65CEg6roRTFMjkV9r0uo7Sssw',
-    consumer_secret: 'FSuWyUQrl3mDTI4oF0XQRoxg6PlsBzBZrriIyR8SybXPRAgiUA',
-    access_token_key: '1016727382185660416-0ImOTX0aZ1MKDCMLhFLT4E0eyM7TDE',
-    access_token_secret: 'Lmnz4hj4A4GrWrRP59CpR6misquFfyWbn2IImvSCptPe0'
-}
+    consumer_key: functions.config().twitter.consumer_key,
+    consumer_secret: functions.config().twitter.consumer_secret,
+    access_token_key: functions.config().twitter.access_token_key,
+    access_token_secret: functions.config().twitter.access_token_secret
+  }
 
-let bitcoinTweets = [
-    "this is price of bitcoin",
-    "bitcoin will increase",
-    "price will decrease of bitcoin",
-    "bitcoin is the future",
-    "bitcoin is the past",
-    "bitcoin is number 1",
-    "finance world will use bitcoin",
-    "Next year bitcoin will be up",
-    "bitcoin can't keep on going up",
-    "bitcoin is good",
-    "nothing good about bitcoin",
-    "bitcoin needs regulation",
-    "bitcoin shouldn't be regulated",
-    "bitcoin in ecommerce",
-    "bitcoin is anonymous",
-    "bitcoin is for drug dealers",
-    "bitcoin is for everyone"
-]
+  // Maximum number of responses we want
+  let maxCount = 100;
+
+  let bitcoinTweets = [
+      "this is price of bitcoin",
+      "bitcoin will increase",
+      "price will decrease of bitcoin",
+      "bitcoin is the future",
+      "bitcoin is the past",
+      "bitcoin is number 1",
+      "finance world will use bitcoin",
+      "Next year bitcoin will be up",
+      "bitcoin can't keep on going up",
+      "bitcoin is good",
+      "nothing good about bitcoin",
+      "bitcoin needs regulation",
+      "bitcoin shouldn't be regulated",
+      "bitcoin in ecommerce",
+      "bitcoin is anonymous",
+      "bitcoin is for drug dealers",
+      "bitcoin is for everyone"
+  ]
+// // Create and Deploy Your First Cloud Functions
+// // https://firebase.google.com/docs/functions/write-firebase-functions
+//
+//  response.send("Hello from Firebase!");
+// });
 
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-function randomGenerator(min, max) {
+function randomGenerator(min, max)
+{
     return ( min + Math.floor( Math.random() * (max - min) ) );
 }
 
@@ -52,55 +61,25 @@ exports.addMessage = functions.https.onRequest((req, res) => {
     // add to /messages
     // Push the new message into the Realtime Database using the Firebase Admin SDK.
     return admin.database().ref('/messages').push({original: original}).then((snapshot) => {
-        // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-        addTweets(original);
-        return res.redirect(303, snapshot.ref.toString());
+      // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
+      addTweets(original);
+      return res.redirect(303, snapshot.ref.toString());
     });
+  });
+
+// Listens for new messages added to /messages/:pushId/original and creates an
+// uppercase version of the message to /messages/:pushId/uppercase
+exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
+.onCreate((snapshot, context) => {
+  // Grab the current value of what was written to the Realtime Database.
+  const original = snapshot.val();
+  console.log('Uppercasing', context.params.pushId, original);
+  const uppercase = original.toUpperCase();
+  // You must return a Promise when performing asynchronous tasks inside a Functions such as
+  // writing to the Firebase Realtime Database.
+  // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+  return snapshot.ref.parent.child('uppercase').set(uppercase);
 });
-
-exports.getTweets = functions.https.onRequest((req, res) => {
-    var T = new Twitter(config);
-    // Set up your search parameters
-    var params = {
-        q: '#bitcoin',
-        count: 3,
-        lang: 'en',
-        until: '2018-07-09'
-    }
-
-    // Initiate your search using the above paramaters
-    T.get('search/tweets', params, function(err, data, response) {
-        // If there is no error, proceed
-        if (!err) {
-            // Loop through the returned tweets
-            for (let i = 0; i < data.statuses.length; i++) {
-                // Get the tweet Id from the returned data
-                let id = { id: data.statuses[i].id_str }
-                // Try to Favorite the selected Tweet
-                T.post('favorites/create', id, function(err, response) {
-                    // If the favorite fails, log the error message
-                    if (err) {
-                        console.log(err[0].message);
-                    }
-                    // If the favorite is successful, log the url of the tweet
-                    else {
-                        let username = response.user.screen_name;
-                        let tweetId = response.id_str;
-
-                        console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`);
-                        console.log('created_at:', response.created_at);
-                        console.log('tweet: ', response.text);
-                        if (response.entities.urls.length > 0) {
-                            console.log('URL: ', response.entities.urls[0].expanded_url)
-                        }
-                    }
-                });
-            }
-        } else {
-            console.log(err);
-        }
-    })
-})
 
 function addTweets(tweetDate) {
     var tweetObj = {
@@ -116,5 +95,160 @@ function addTweets(tweetDate) {
     }
 
     let refPath = "/dates/"+tweetDate;
+    //   let dateRef = admin.database().ref('/dates').update(dateobj);
     return admin.database().ref(refPath).set(tweetObj);
 }
+
+exports.getTweets = functions.https.onRequest((req, res, maxId) => {
+    const until = req.query.text;
+    const count = req.query.count;
+    if (count) {
+        maxCount = count;
+    }
+    getTwitterData( {until:until} );
+})
+
+function getTwitterData(inObj) {
+    console.log("inObj", inObj);
+    // console.log("config", config);
+
+    var T = new Twitter(config);
+    // Set up your search parameters
+    var params = {
+        q: '#bitcoin',
+        count: maxCount,
+        lang: 'en',
+    }
+
+    if (inObj) {
+        if (inObj.until) {
+            params.until = inObj.until;
+        }
+        if (inObj.max_id) {
+            params.max_id = inObj.max_id;
+        }
+    }
+
+    console.log("params", params);
+
+    // Initiate your search using the above paramaters
+    T.get('search/tweets', params, ((err, data, response)  => {
+        // If there is no error, proceed
+        if (!err) {
+            processTwitResponse(data);
+        } else {
+            console.log("Error occurred", err);
+        }
+    }))
+}
+
+function processTwitResponse(data) {
+    // Loop through the returned tweets
+    let maxId = 0;
+    for (let i = 0; i < data.statuses.length; i++) {
+        // Get the tweet Id from the returned data
+        const item = data.statuses[i];
+        const id = item.id_str;
+        if (parseInt(maxId) < parseInt(id)) {
+            maxId = id;
+        }
+
+        console.log('item:', item);
+
+        // console.log('created_at:', item.created_at);
+        // console.log('tweet: ', item.text);
+        console.log('Id: ', id);
+
+        if (item.entities.urls.length > 0) {
+            console.log('URL: ', item.entities.urls[0].expanded_url)
+        }
+
+        const date = getDate(item.created_at);
+        // Add to database
+        let refPath = "/dates/"+date+"/"+id;
+        console.log("refpath:", refPath);
+        console.log("tweet:", item.text);
+
+        admin.database().ref(refPath).set(item.text);
+    }
+    console.log('search_metadata json:', data.search_metadata);
+
+    // VIK_TODO: Revisit this to find better way to check if it has the
+    // property or not
+    // For some reason, next_results is sometimes not included in
+    // search_metdata so commenting and using maxId that we deduced
+    // if (data.search_metadata.next_results) {
+    //     let maxId = getMaxId(data.search_metadata.next_results);
+    //     if (maxId) {
+    //         console.log('next_results:', data.search_metadata.next_results);
+    //         getTwitterData({"max_id": maxId});
+    //     }
+    // }
+
+    getTwitterData({"max_id": maxId});
+}
+
+function getDate(createdDate) {
+    let dt = new Date(createdDate);
+    let year = dt.getFullYear().toString();
+    let month = dt.getMonth() + 1;
+    month = month.toString();
+    if (month.length === 1) {
+        month = "0" + month;
+    }
+    let day = dt.getDate().toString();
+    if (day.length === 1) {
+        day = "0" + day;
+    }
+
+    return (year + month + day);
+}
+
+function getMaxId(nextResult) {
+    let maxIdStr = "max_id=";
+    let maxIdStrEnd = nextResult.indexOf(maxIdStr) + maxIdStr.length;
+    let ampAfterMaxIdStr = nextResult.indexOf("&", maxIdStrEnd);
+    let maxId = nextResult.slice(maxIdStrEnd, ampAfterMaxIdStr);
+    return maxId;
+}
+
+// URL: 
+// https://us-central1-bitcoinprice-208905.cloudfunctions.net/helloWorld
+// exports.helloWorld = functions.https.onRequest((req, res) => {
+//     var movie = "Pulp Fiction"  
+//     let appKey = "3AzDFpfTyJGXuBgEAeMFLz2LDCKAEJHl";
+//     var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+//         movie + "&api_key=" + appKey + "&limit=10";
+
+//         var options = {
+//             uri: queryURL,
+//             // qs: {
+//             //     access_token: 'xxxxx xxxxx' // -> uri + '?access_token=xxxxx%20xxxxx'
+//             // },
+//             // headers: {
+//             //     'User-Agent': 'Request-Promise'
+//             // },
+//             json: true // Automatically parses the JSON string in the response
+//         };
+//     return rp(options)
+//             .then(function (repos) {
+//                 // console.log(JSON.stringify(repos));
+//                 var results = repos.data;
+//                 console.log('User has %d repos', results.length);
+
+//                 for (var i = 0; i < results.length; i++) {
+//                     let gifData = results[i];
+//                     // var gifDiv = $("<div>").addClass("ajax-item");
+        
+//                     console.log(gifData.title);
+//                     console.log(gifData.images.fixed_height_still.url);
+//                     console.log(gifData.images.fixed_height.url);
+//                 }
+//                 return this;
+//             });
+//             // .catch(function (err) {
+//             //     console.log("Api call failed");
+//             //     // API call failed...
+                
+//             // });
+// })
